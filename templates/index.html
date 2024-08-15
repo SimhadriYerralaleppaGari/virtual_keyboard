@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Virtual Keyboard Control</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Virtual Keyboard Control</h1>
+        
+        <div class="button-container">
+            <form action="{{ url_for('enable_keyboard') }}" method="post" id="enableForm">
+                <button type="submit" id="enableBtn">Enable Virtual Keyboard</button>
+            </form>
+            <form action="{{ url_for('disable_keyboard') }}" method="post" id="disableForm">
+                <button type="submit" id="disableBtn">Disable Virtual Keyboard</button>
+            </form>
+        </div>
+
+        <div class="status" id="status">Virtual Keyboard: Disabled</div>
+
+        <img src="{{ url_for('static', filename='keyboard_preview.png') }}" alt="Virtual Keyboard Preview" class="keyboard-preview">
+    </div>
+
+    <script>
+        const status = document.getElementById('status');
+        const enableBtn = document.getElementById('enableBtn');
+        const disableBtn = document.getElementById('disableBtn');
+
+        function updateStatus(enabled) {
+            status.textContent = `Virtual Keyboard: ${enabled ? 'Enabled' : 'Disabled'}`;
+            status.style.color = enabled ? '#4CAF50' : '#333';
+            enableBtn.disabled = enabled;
+            disableBtn.disabled = !enabled;
+        }
+
+        document.getElementById('enableForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            fetch("{{ url_for('enable_keyboard') }}", { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        updateStatus(true);
+                    }
+                });
+        });
+
+        document.getElementById('disableForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            fetch("{{ url_for('disable_keyboard') }}", { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        updateStatus(false);
+                    }
+                });
+        });
+
+        // Check initial status on page load
+        fetch("{{ url_for('keyboard_status') }}")
+            .then(response => response.json())
+            .then(data => {
+                updateStatus(data.enabled);
+            });
+    </script>
+</body>
+</html>
